@@ -90,7 +90,10 @@ GUI d
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
+                        <td>
+                            <input type="checkbox" id="no-flash">
+                            <label for="no-flash">Prevent storing strings in flash</label><br>
+                        </td>
                         <td>
                             <button style="float:right" onclick="run()">CONVERT</button>
                             <button style="float:right;margin-right:5px" onclick="copy()">COPY OUTPUT</button>
@@ -134,7 +137,9 @@ GUI d
 
          function run() {
              document.getElementById("out").value =
-                 ducky2digi(document.getElementById("inp").value);
+                 ducky2digi(document.getElementById("inp").value, {
+                     no_flash_str: document.getElementById("no-flash").checked
+                 });
          }
 
          function copy() {
