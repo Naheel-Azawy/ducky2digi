@@ -5,21 +5,18 @@
 
 * Usage
   #+BEGIN_SRC shell
-  cat /path/to/ducky-script.txt | python3 ./ducky2digi.py > /path/to/digi.ino
+  cat /path/to/ducky-script.txt | node ./ducky2digi.js > /path/to/digi.ino
   #+END_SRC
 
 * Options
-  #+BEGIN_SRC 
-  python3 ducky2digi.py --help
-  usage: ducky2digi.py [-h] [--loop] [--no-flash-str] [--init-delay D]
-
-  Convert DuckyScripts to DigistumpArduino sketck
-
-  optional arguments:
-  -h, --help      show this help message and exit
-  --loop          Keep repeating the payload
-  --no-flash-str  Prevent storing strings in flash
-  --init-delay D  Initial delay before payload starts
+  #+BEGIN_SRC
+    usage: node ducky2digi.js [-h] [--loop] [--no-flash-str] [--init-delay D]
+    Convert DuckyScripts to DigistumpArduino sketck
+    optional arguments:
+      -h, --help      show this help message and exit
+      --loop          Keep repeating the payload
+      --no-flash-str  Prevent storing strings in flash
+      --init-delay D  Initial delay before payload starts
   #+END_SRC
 
 * Useful links
