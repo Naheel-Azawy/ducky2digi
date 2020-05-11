@@ -68,6 +68,7 @@ function ducky2digi(inp, opts={}) {
     let res = "";
 
     res += '#include "DigiKeyboard.h"\n\n';
+    res += "// Converted with https://naheel-azawy.github.io/ducky2digi\n\n";
     if (loop) {
         res += "void setup() {}\n\n";
         res += "void loop() {\n";
@@ -76,9 +77,9 @@ function ducky2digi(inp, opts={}) {
         res += "void setup() {\n";
     }
 
-    res += "DigiKeyboard.sendKeyStroke(0);\n";
+    res += "  DigiKeyboard.sendKeyStroke(0);\n";
     if (init_delay > 0) {
-        res += "DigiKeyboard.delay(" + init_delay + ");\n";
+        res += "  DigiKeyboard.delay(" + init_delay + ");\n";
     }
 
     // the default delay if specified by user
@@ -108,7 +109,7 @@ function ducky2digi(inp, opts={}) {
             def_delay = Number(arg);
             continue;
         } else if (cmd == "REM") {
-            res += "// " + arg + "\n";
+            res += "  // " + arg + "\n";
             continue;
         } else if (cmd == "STRING") {
             last_cmd = "DigiKeyboard.print(";
@@ -120,25 +121,25 @@ function ducky2digi(inp, opts={}) {
                 last_cmd += ")";
             }
             last_cmd += ";";
-            res += last_cmd + "\n";
+            res += "  " + last_cmd + "\n";
         } else if (cmd == "DELAY") {
             last_cmd = "DigiKeyboard.delay(" + arg + ");";
-            res += last_cmd + "\n";
+            res += "  " + last_cmd + "\n";
         } else if (cmd == "REPEAT") {
-            res += "for (int i = 0; i < " + arg + "; ++i)\n";
-            res += last_cmd + "\n";
+            res += "  for (int i = 0; i < " + arg + "; ++i)\n";
+            res += "    " + last_cmd + "\n";
         } else {
             if (arg != undefined) { // MOD key is used
                 let mod = MAP[cmd];
                 let key = get_key(arg);
-                res += "DigiKeyboard.sendKeyStroke(" + key + ", " + mod + ");\n";
+                res += "  DigiKeyboard.sendKeyStroke(" + key + ", " + mod + ");\n";
             } else {
                 let key = get_key(cmd);
-                res += "DigiKeyboard.sendKeyStroke(" + key + ");\n";
+                res += "  DigiKeyboard.sendKeyStroke(" + key + ");\n";
             }
         }
         if (def_delay != 0) {
-            res += "DigiKeyboard.delay(" + def_delay + ");\n";
+            res += "  DigiKeyboard.delay(" + def_delay + ");\n";
         }
     }
 
