@@ -68,7 +68,7 @@ function ducky2digi(inp, opts={}) {
     let res = "";
 
     res += '#include "DigiKeyboard.h"\n\n';
-    res += "// Converted with https://naheel-azawy.github.io/ducky2digi\n\n";
+    res += "// Converted using https://naheel.xyz/ducky2digi\n\n";
     if (loop) {
         res += "void setup() {}\n\n";
         res += "void loop() {\n";
@@ -164,7 +164,7 @@ if (typeof(process) != 'undefined') {
     let loop         = false;
     let no_flash_str = false;
     let init_delay   = 1000;
-    
+
     for (let i = 2; i < process.argv.length; ++i) {
         switch (process.argv[i]) {
         case "--loop":         loop         = true; break;
@@ -179,7 +179,7 @@ if (typeof(process) != 'undefined') {
         default: help();
         }
     }
-    
+
     let inp = "";
     process.stdin.resume();
     process.stdin.setEncoding('utf8');
