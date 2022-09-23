@@ -157,21 +157,25 @@ function ducky2digi(inp, opts={}) {
 }
 
 if (typeof(process) != "undefined") {
-    const fs = require("fs");
+    const fs            = require("fs");
+    const os            = require("os");
+    const path          = require("path");
+    const child_process = require("child_process");
 
     function help() {
         const bin = process.argv[1].split("/").pop();
-        console.log(`usage: ${bin} [-h] [--loop] [--no-flash-str] ` +
-                    "[--init-delay D] [FILE]");
-        console.log("Convert DuckyScripts to DigistumpArduino sketck");
+        console.log(`usage: ${bin} [OPTION]... [FILE]`);
+        console.log("Convert DuckyScripts to Digistump Arduino sketck");
         console.log("optional arguments:");
         console.log("  -h, --help      show this help message and exit");
         console.log("  --loop          Keep repeating the payload");
         console.log("  --no-flash-str  Prevent storing strings in flash");
         console.log("  --init-delay D  Initial delay before payload starts");
+        console.log("  --upload        Upload using platformio");
         process.exit(1);
     }
 
+    let upload       = false;
     let loop         = false;
     let no_flash_str = false;
     let init_delay   = 1000;
@@ -179,6 +183,7 @@ if (typeof(process) != "undefined") {
 
     for (let i = 2; i < process.argv.length; ++i) {
         switch (process.argv[i]) {
+        case "--upload":       upload       = true; break;
         case "--loop":         loop         = true; break;
         case "--no-flash-str": no_flash_str = true; break;
         case "--init-delay":
@@ -200,10 +205,27 @@ if (typeof(process) != "undefined") {
 
     function run(inp) {
         const opts = {loop, no_flash_str, init_delay};
+        let out;
         try {
-            console.log(ducky2digi(inp, opts));
+            out = ducky2digi(inp, opts);
+            console.log(out);
         } catch (e) {
             console.error(e.toString());
+            return;
+        }
+
+        if (upload) {
+            const d = fs.mkdtempSync(path.join(os.tmpdir(), "ducky2digi-"));
+            fs.mkdirSync(path.join(d, "src"));
+            fs.writeFileSync(path.join(d, "src", "main.ino"), out);
+            fs.writeFileSync(path.join(d, "platformio.ini"),
+                             "[env:digispark-tiny]\n"   +
+                             "platform = atmelavr\n"    +
+                             "board = digispark-tiny\n" +
+                             "framework = arduino");
+            child_process.spawnSync("pio", ["run", "-t", "upload", "-d", d],
+                                    {stdio: "inherit"});
+            fs.rmSync(d, {recursive: true, force: true});
         }
     }
 
