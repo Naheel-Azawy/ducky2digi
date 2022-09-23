@@ -52,8 +52,49 @@ function ducky2digi(inp, opts={}) {
         "TAB":            "43"
     };
 
+    const NOT_IMPL = [
+        "ATTACKMODE",
+
+        "WAIT_FOR_BUTTON_PRESS",
+        "BUTTON_DEF",
+        "ENABLE_BUTTON",
+        "DISABLE_BUTTON",
+
+        "LED_R",
+        "LED_G",
+        "LED_OFF",
+
+        "HOLD",
+        "RELEASE",
+        "RESET",
+
+        "IF",
+        "WHILE",
+
+        "FUNCTION",
+        "EXTENSION",
+        "DEFINE",
+
+        "SAVE_HOST_KEYBOARD_LOCK_STATE",
+        "RESTORE_HOST_KEYBOARD_LOCK_STATE",
+
+        "RANDOM_NUMBER",
+        "RANDOM_CHARACTER",
+        "RANDOM_LOWERCASE_LETTER",
+        "RANDOM_SPECIAL",
+
+        "WAIT_FOR_STORAGE_INACTIVITY",
+        "HIDE_PAYLOAD",
+        "RESTART_PAYLOAD",
+        "EXFIL"
+    ];
+
+    function err(e) {
+        throw Error(e);
+    }
+
     function nope(i, k) {
-        throw Error(`${i}: Key '${k}' not found`);
+        err(`${i}: Key '${k}' not found`);
     }
 
     function get_key(k) {
@@ -68,6 +109,8 @@ function ducky2digi(inp, opts={}) {
             }
         }
     }
+
+    let vars = {};
 
     let res = "";
 
@@ -103,20 +146,30 @@ function ducky2digi(inp, opts={}) {
         let space = line.indexOf(" ");
         let cmd, arg;
         if (space != -1) {
-            cmd = line.substring(0, space);
-            arg = line.substring(space + 1);
+            cmd = line.substring(0, space).trim();
+            arg = line.substring(space + 1).trim();
         } else {
-            cmd = line;
+            cmd = line.trim();
             arg = undefined;
         }
-        if (cmd == "DEFAULTDELAY" || cmd == "DEFAULT_DELAY") {
+
+        if (NOT_IMPL.includes(cmd)) {
+            err(`'${cmd}' is not implemented yet`);
+
+        } else if (cmd == "DEFAULTDELAY" || cmd == "DEFAULT_DELAY") {
             def_delay = Number(arg);
             continue;
+
         } else if (cmd == "REM") {
             res += "  // " + arg + "\n";
             continue;
-        } else if (cmd == "STRING") {
-            last_cmd = "DigiKeyboard.print(";
+
+        } else if (cmd == "STRING" || cmd == "STRINGLN") {
+            if (cmd == "STRINGLN") {
+                last_cmd = "DigiKeyboard.println(";
+            } else {
+                last_cmd = "DigiKeyboard.print(";
+            }
             if (flash_str) {
                 last_cmd += "F(";
             }
@@ -126,22 +179,47 @@ function ducky2digi(inp, opts={}) {
             }
             last_cmd += ";";
             res += "  " + last_cmd + "\n";
+
         } else if (cmd == "DELAY") {
             last_cmd = "DigiKeyboard.delay(" + arg + ");";
             res += "  " + last_cmd + "\n";
+
         } else if (cmd == "REPEAT") {
             res += "  for (int i = 0; i < " + arg + "; ++i)\n";
             res += "    " + last_cmd + "\n";
+
         } else {
-            if (arg != undefined) { // MOD key is used
-                let mod = MAP[cmd];
-                let key = get_key(arg);
+            // Variables
+            if (cmd == "VAR" ||
+                (cmd.startsWith("$") && arg && arg.startsWith("="))) {
+                let name, val;
+                if (cmd == "VAR") {
+                    arg = arg.split("=");
+                    name = arg[0].trim().substring(1);
+                    val = arg[1].trim();
+                } else {
+                    name = cmd.substring(1);
+                    val = arg.split("=")[1].trim();
+                }
+                if (val == "TRUE")  val = 1;
+                if (val == "FALSE") val = 0;
+                if (vars[name]) {
+                    res += `  ${name} = ${val};\n`;
+                } else {
+                    vars[name] = val;
+                    res += `  int ${name} = ${val};\n`;
+                }
+
+            // Keys
+            } else if (arg != undefined) { // MOD key is used
+                const mod = MAP[cmd];
+                const key = get_key(arg);
                 if (!mod) nope(i, cmd);
                 if (!key) nope(i, arg);
                 res += "  DigiKeyboard.sendKeyStroke(" + key + ", " +
                     mod + ");\n";
             } else {
-                let key = get_key(cmd);
+                const key = get_key(cmd);
                 if (!key) nope(i, cmd);
                 res += "  DigiKeyboard.sendKeyStroke(" + key + ");\n";
             }
@@ -196,7 +274,7 @@ if (typeof(process) != "undefined") {
             break;
         default:
             if (process.argv[i].startsWith("-")) {
-                console.error(`ERROR: unknown option ${process.argv[i]}`);
+                console.error(`Error: unknown option ${process.argv[i]}`);
                 help();
             } else {
                 extra_args.push(process.argv[i]);
@@ -210,7 +288,7 @@ if (typeof(process) != "undefined") {
         if (fs.existsSync(extra_args[0])) {
             inp_file = extra_args[0];
         } else {
-            console.error(`ERROR: '${extra_args[0]}' is not a file`);
+            console.error(`Error: '${extra_args[0]}' is not a file`);
             help();
         }
     }
