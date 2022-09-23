@@ -136,10 +136,18 @@ GUI d
          }
 
          function run() {
-             document.getElementById("out").value =
-                 ducky2digi(document.getElementById("inp").value, {
-                     no_flash_str: document.getElementById("no-flash").checked
-                 });
+             const inp = document.getElementById("inp").value;
+             const opts = {
+                 no_flash_str: document.getElementById("no-flash").checked
+             };
+
+             let out;
+             try {
+                 out = ducky2digi(inp, opts);
+             } catch (e) {
+                 out = e;
+             }
+             document.getElementById("out").value = out;
          }
 
          function copy() {

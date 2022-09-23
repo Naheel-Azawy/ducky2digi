@@ -52,6 +52,10 @@ function ducky2digi(inp, opts={}) {
         "TAB":            "43"
     };
 
+    function nope(i, k) {
+        throw Error(`${i}: Key '${k}' not found`);
+    }
+
     function get_key(k) {
         if (k.length == 1) {
             return "KEY_" + k.toUpperCase();
@@ -132,9 +136,13 @@ function ducky2digi(inp, opts={}) {
             if (arg != undefined) { // MOD key is used
                 let mod = MAP[cmd];
                 let key = get_key(arg);
-                res += "  DigiKeyboard.sendKeyStroke(" + key + ", " + mod + ");\n";
+                if (!mod) nope(i, cmd);
+                if (!key) nope(i, arg);
+                res += "  DigiKeyboard.sendKeyStroke(" + key + ", " +
+                    mod + ");\n";
             } else {
                 let key = get_key(cmd);
+                if (!key) nope(i, cmd);
                 res += "  DigiKeyboard.sendKeyStroke(" + key + ");\n";
             }
         }
@@ -190,16 +198,23 @@ if (typeof(process) != "undefined") {
         }
     }
 
-    const opts = {loop, no_flash_str, init_delay};
+    function run(inp) {
+        const opts = {loop, no_flash_str, init_delay};
+        try {
+            console.log(ducky2digi(inp, opts));
+        } catch (e) {
+            console.error(e.toString());
+        }
+    }
+
     let inp = "";
     if (inp_file) {
         inp = fs.readFileSync(inp_file).toString();
-        console.log(ducky2digi(inp, opts));
+        run(inp);
     } else {
         process.stdin.resume();
         process.stdin.setEncoding("utf8");
         process.stdin.on("data", line => inp += line);
-        process.stdin.on("end", () =>
-            console.log(ducky2digi(inp, opts)));
+        process.stdin.on("end", () => run(inp));
     }
 }
