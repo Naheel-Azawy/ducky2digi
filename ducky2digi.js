@@ -167,11 +167,11 @@ if (typeof(process) != "undefined") {
         console.log(`usage: ${bin} [OPTION]... [FILE]`);
         console.log("Convert DuckyScripts to Digistump Arduino sketck");
         console.log("optional arguments:");
-        console.log("  -h, --help      show this help message and exit");
-        console.log("  --loop          Keep repeating the payload");
-        console.log("  --no-flash-str  Prevent storing strings in flash");
-        console.log("  --init-delay D  Initial delay before payload starts");
-        console.log("  --upload        Upload using platformio");
+        console.log("  -h, --help          show this help message and exit");
+        console.log("  -l, --loop          keep repeating the payload");
+        console.log("  -f, --no-flash-str  prevent storing strings in flash");
+        console.log("  -d, --init-delay D  initial delay before payload starts");
+        console.log("  -u, --upload        upload using platformio");
         process.exit(1);
     }
 
@@ -180,13 +180,14 @@ if (typeof(process) != "undefined") {
     let no_flash_str = false;
     let init_delay   = 1000;
     let inp_file     = undefined;
+    let extra_args   = [];
 
     for (let i = 2; i < process.argv.length; ++i) {
         switch (process.argv[i]) {
-        case "--upload":       upload       = true; break;
-        case "--loop":         loop         = true; break;
-        case "--no-flash-str": no_flash_str = true; break;
-        case "--init-delay":
+        case "-u": case "--upload":       upload       = true; break;
+        case "-l": case "--loop":         loop         = true; break;
+        case "-f": case "--no-flash-str": no_flash_str = true; break;
+        case "-d": case "--init-delay":
             if (i + 1 < process.argv.length) {
                 init_delay = process.argv[++i];
             } else {
@@ -194,12 +195,23 @@ if (typeof(process) != "undefined") {
             }
             break;
         default:
-            if (fs.existsSync(process.argv[i]) &&
-                !inp_file) {
-                inp_file = process.argv[i];
-            } else {
+            if (process.argv[i].startsWith("-")) {
+                console.error(`ERROR: unknown option ${process.argv[i]}`);
                 help();
+            } else {
+                extra_args.push(process.argv[i]);
             }
+        }
+    }
+
+    if (extra_args.length > 1) {
+        help();
+    } else if (extra_args.length == 1) {
+        if (fs.existsSync(extra_args[0])) {
+            inp_file = extra_args[0];
+        } else {
+            console.error(`ERROR: '${extra_args[0]}' is not a file`);
+            help();
         }
     }
 
