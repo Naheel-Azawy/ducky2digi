@@ -148,10 +148,13 @@ function ducky2digi(inp, opts={}) {
     return res;
 }
 
-if (typeof(process) != 'undefined') {
+if (typeof(process) != "undefined") {
+    const fs = require("fs");
 
     function help() {
-        console.log(`usage: ${process.argv[1]} [-h] [--loop] [--no-flash-str] [--init-delay D]`);
+        const bin = process.argv[1].split("/").pop();
+        console.log(`usage: ${bin} [-h] [--loop] [--no-flash-str] ` +
+                    "[--init-delay D] [FILE]");
         console.log("Convert DuckyScripts to DigistumpArduino sketck");
         console.log("optional arguments:");
         console.log("  -h, --help      show this help message and exit");
@@ -164,6 +167,7 @@ if (typeof(process) != 'undefined') {
     let loop         = false;
     let no_flash_str = false;
     let init_delay   = 1000;
+    let inp_file     = undefined;
 
     for (let i = 2; i < process.argv.length; ++i) {
         switch (process.argv[i]) {
@@ -176,19 +180,26 @@ if (typeof(process) != 'undefined') {
                 help();
             }
             break;
-        default: help();
+        default:
+            if (fs.existsSync(process.argv[i]) &&
+                !inp_file) {
+                inp_file = process.argv[i];
+            } else {
+                help();
+            }
         }
     }
 
+    const opts = {loop, no_flash_str, init_delay};
     let inp = "";
-    process.stdin.resume();
-    process.stdin.setEncoding('utf8');
-    process.stdin.on('data', line => inp += line);
-    process.stdin.on('end', () => {
-        console.log(ducky2digi(inp, {
-            loop:         loop,
-            no_flash_str: no_flash_str,
-            init_delay:   init_delay
-        }));
-    });
+    if (inp_file) {
+        inp = fs.readFileSync(inp_file).toString();
+        console.log(ducky2digi(inp, opts));
+    } else {
+        process.stdin.resume();
+        process.stdin.setEncoding("utf8");
+        process.stdin.on("data", line => inp += line);
+        process.stdin.on("end", () =>
+            console.log(ducky2digi(inp, opts)));
+    }
 }
