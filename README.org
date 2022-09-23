@@ -1,28 +1,46 @@
 * Duckyscript to Digispark
-  Convert USB-Rubber-Ducky's scripts to Arduino sketches for Digispark.
+Convert USB-Rubber-Ducky's scripts to Arduino sketches for Digispark.
 
-  The idea was based on [[https://github.com/CedArctic/digiQuack]] but the entire project was built from scratch in a different aspect.
+The idea was based on [[https://github.com/CedArctic/digiQuack]] but the entire project was built from scratch in a different aspect.
 
-* Usage
-  #+BEGIN_SRC shell
-  cat /path/to/ducky-script.txt | node ./ducky2digi.js > /path/to/digi.ino
-  #+END_SRC
+Note that commands in newer versions of rubber ducky are not implemented yet.
+The current implementation is based on the commands listed in the [[https://github.com/hak5darren/USB-Rubber-Ducky/wiki/Duckyscript][old wiki]].
 
-* Options
-  #+BEGIN_SRC
-    usage: node ducky2digi.js [-h] [--loop] [--no-flash-str] [--init-delay D]
-    Convert DuckyScripts to DigistumpArduino sketck
-    optional arguments:
-      -h, --help      show this help message and exit
-      --loop          Keep repeating the payload
-      --no-flash-str  Prevent storing strings in flash
-      --init-delay D  Initial delay before payload starts
-  #+END_SRC
+** Install
+#+begin_src shell
+  sudo make install
+#+end_src
 
-* Useful links
-  - [[https://github.com/digistump/DigistumpArduino]]
-  - [[https://github.com/hak5darren/USB-Rubber-Ducky/wiki/Duckyscript]]
-  - [[https://github.com/hak5darren/USB-Rubber-Ducky/wiki]]
+** Usage
+#+begin_src shell
+  cat /path/to/ducky-script.txt | ducky2digi > /path/to/digi.ino
+#+end_src
+Or
+#+begin_src shell
+  ducky2digi /path/to/ducky-script.txt > /path/to/digi.ino
+#+end_src
+
+Upload script directly using [[https://platformio.org/][platformio]]
+#+begin_src shell
+  ducky2digi -u /path/to/ducky-script.txt
+#+end_src
+
+** Options
+#+begin_src fundamental
+  usage: ducky2digi [OPTION]... [FILE]
+  Convert DuckyScripts to Digistump Arduino sketck
+  optional arguments:
+    -h, --help          show this help message and exit
+    -l, --loop          keep repeating the payload
+    -f, --no-flash-str  prevent storing strings in flash
+    -d, --init-delay D  initial delay before payload starts
+    -u, --upload        upload using platformio
+#+end_src
+
+** Useful links
+- [[https://github.com/digistump/DigistumpArduino]]
+- [[https://github.com/hak5darren/USB-Rubber-Ducky/wiki/Duckyscript]]
+- [[https://github.com/hak5darren/USB-Rubber-Ducky/wiki]]
 
 * License
-  GPL-3.0
+GPL-3.0

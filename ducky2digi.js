@@ -262,6 +262,7 @@ if (typeof(process) != "undefined") {
 
     for (let i = 2; i < process.argv.length; ++i) {
         switch (process.argv[i]) {
+        case "-h": case "--help":         help();              break;
         case "-u": case "--upload":       upload       = true; break;
         case "-l": case "--loop":         loop         = true; break;
         case "-f": case "--no-flash-str": no_flash_str = true; break;
